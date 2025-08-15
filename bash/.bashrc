@@ -16,8 +16,8 @@ HISTCONTROL=ignoreboth
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+HISTSIZE=50000
+HISTFILESIZE=100000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -115,6 +115,9 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+###
+# ble.sh
 source ~/.local/share/blesh/ble.sh
 
 eval "$(starship init bash)"
@@ -132,6 +135,7 @@ help() {
 alias l='ls -lAh'
 alias va='source .venv/bin/activate'
 
+# uv shell completions
 eval "$(uv generate-shell-completion bash)"
 eval "$(uvx --generate-shell-completion bash)"
 
@@ -141,9 +145,27 @@ export PATH="/opt/nvim-linux64/bin:$PATH"
 # ssh-agent
 alias ssh-gh='eval "$(ssh-agent -s)" && ssh-add ~/.ssh/github'
 
+# tldr
 source /home/raitis/tools/completions/tldr.bash
 
+# fzf
+#export FZF_DEFAULT_OPTS_FILE=~/.local/share/fzf/.fzfrc
+export FZF_ALT_C_OPTS="--walker-skip .git,.cache,.venv --preview 'tree -C {} | head -200'"
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
+# zoxide
 eval "$(zoxide init bash)"
 
+# yazi
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
